@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Palletleverancier — Winsttool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;font-size:15px;background:#f4f4f0;color:#1a1a1a;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:210px;background:#fff;border-right:1px solid #e0e0d8;padding:20px 0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:50}
+.sb-brand{padding:0 18px 4px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em}
+.sb-title{padding:0 18px 20px;font-size:17px;font-weight:700;color:#1a1a1a}
+.sb-nav{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:14px;cursor:pointer;color:#666;border-left:3px solid transparent;transition:all .15s}
+.sb-nav:hover{color:#1a1a1a;background:#f7f7f5}
+.sb-nav.on{color:#1a1a1a;border-left-color:#1a1a1a;background:#f7f7f5;font-weight:600}
+.main{margin-left:210px;padding:28px;max-width:980px;width:100%}
+.pg{display:none}.pg.on{display:block}
+.pg-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.pg-sub{font-size:13px;color:#888;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e0e0d8;border-radius:12px;padding:20px;margin-bottom:14px}
+.card-t{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.vcard{background:#e8f7f0;border:1px solid #a8dfc8;border-radius:12px;padding:20px;margin-bottom:14px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:12px;font-weight:600;color:#666}
+.f input,.f select,.f textarea{padding:8px 10px;border:1px solid #d0d0c8;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;width:100%;font-family:inherit}
+.f input:focus,.f select:focus{outline:none;border-color:#888}
+.f textarea{resize:vertical;min-height:64px}
+.f input.big{font-size:22px;font-weight:600;padding:10px 14px;text-align:center;height:52px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.mb{margin-bottom:12px}
+.btn{padding:8px 16px;border:1px solid #d0d0c8;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn:hover{background:#f4f4f0}
+.btn-p{background:#1a1a1a;color:#fff;border-color:#1a1a1a}.btn-p:hover{opacity:.85}
+.btn-d{color:#c0392b;border-color:#f0b0b0}.btn-d:hover{background:#fdf0ef}
+.btn-g{border-color:#a8dfc8;color:#085041}.btn-g:hover{background:#e8f7f0}
+.btn-sm{padding:5px 10px;font-size:12px}
+.badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
+.b-bl{background:#e6f1fb;color:#185fa5}
+.b-tl{background:#e1f5ee;color:#085041}
+.b-km{background:#e6f1fb;color:#185fa5;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:#f7f7f5;border-radius:8px;padding:14px 16px}
+.kpi-l{font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.kpi-v{font-size:23px;font-weight:700}
+.kpi-s{font-size:12px;color:#888;margin-top:3px}
+.sl{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;margin-bottom:14px}
+.sl-g{background:#eaf3de;color:#276010}
+.sl-o{background:#faeeda;color:#8a5500}
+.sl-r{background:#fcebeb;color:#a32d2d}
+.sl-gr{background:#f7f7f5;color:#666}
+.rv{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;padding:10px 12px;background:#f7f7f5;border-radius:8px;border:1px solid #e0e0d8;margin-bottom:10px}
+.rnh{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;background:#e6f1fb;color:#185fa5}
+.rns{padding:4px 10px;border-radius:6px;font-size:12px;background:#fff;border:1px solid #d0d0c8;color:#1a1a1a}
+.rnr{padding:4px 10px;border-radius:6px;font-size:12px;background:#a8dfc8;color:#085041;font-weight:600}
+.rnarr{color:#bbb;font-size:14px}
+.day-block{border:1px solid #e0e0d8;border-radius:12px;margin-bottom:10px;background:#fff;overflow:hidden}
+.day-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7f7f5;cursor:pointer;user-select:none}
+.day-hl{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700}
+.day-b{padding:14px 16px}
+.sc{border:1px solid #e0e0d8;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.scl{background:#f7f7f5}
+.scr{background:#e8f7f0;border-color:#a8dfc8}
+.sch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ktog{display:flex;align-items:center;gap:6px;font-size:13px;color:#666;cursor:pointer}
+.ktog input{width:15px;height:15px;cursor:pointer}
+.cr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0e8;font-size:13px}
+.cr:last-child{border-bottom:none;font-weight:700;padding-top:8px;font-size:14px}
+.be-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.be-c{background:#f7f7f5;border-radius:8px;padding:12px 14px;text-align:center}
+.be-v{font-size:28px;font-weight:700;margin-bottom:2px}
+.be-l{font-size:11px;color:#888}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0d8}
+.tbl td{padding:10px 10px;border-bottom:1px solid #f0f0e8;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f7f7f5}
+.racts{display:flex;gap:6px;opacity:0;transition:opacity .15s}
+.tbl tr:hover .racts{opacity:1}
+.prow{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 36px;gap:8px;align-items:end;padding:8px 10px;border:1px solid #e0e0d8;border-radius:8px;margin-bottom:8px;background:#f7f7f5}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal{background:#fff;border-radius:12px;padding:24px;width:540px;max-width:100%;max-height:90vh;overflow-y:auto}
+.modal-t{font-size:17px;font-weight:700;margin-bottom:16px}
+.sec-l{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px}
+.modal-ft{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0d8}
+.fil-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.fb{padding:6px 14px;border:1px solid #d0d0c8;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#888;transition:all .15s}
+.fb:hover{background:#f4f4f0}
+.fb.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.savebar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #e0e0d8}
+.ok-msg{font-size:13px;color:#276010}
+.ini{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+.dotg{background:#27ae60}.doto{background:#e67e22}.dotr{background:#e74c3c}
+.empty{text-align:center;padding:40px 16px;color:#888;font-size:14px}
+.hint{font-size:12px;color:#888;background:#f7f7f5;border-radius:8px;padding:8px 12px}
+.mp{font-size:11px;padding:2px 7px;border-radius:4px;margin-top:2px;display:inline-block}
+.div{height:1px;background:#f0f0e8;margin:12px 0}
+.vmg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.vm{background:rgba(255,255,255,.6);border-radius:8px;padding:10px 14px}
+.vml{font-size:11px;color:#0f6e56;margin-bottom:4px}
+.vmv{font-size:22px;font-weight:700;color:#04342c}
+@media(max-width:700px){.main{margin-left:0;padding:16px}.sidebar{display:none}.g2,.g3,.g4,.kpi-row,.be-row,.prow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="sb-brand">De Palletleverancier</div>
+  <div class="sb-title">Winsttool</div>
+  <div class="sb-nav on" onclick="nav('inst')">⚙️ &nbsp;Instellingen</div>
+  <div class="sb-nav" onclick="nav('kl')">👥 &nbsp;Klanten</div>
+  <div class="sb-nav" onclick="nav('week')">📋 &nbsp;Weekinvoer</div>
+  <div class="sb-nav" onclick="nav('dash')">📊 &nbsp;Dashboard</div>
+</nav>
+<div class="main">
+
+<div id="pg-inst" class="pg on">
+<div class="pg-title">Instellingen</div>
+<div class="pg-sub">Eenmalig invullen — vormt de basis van alle berekeningen</div>
+<div class="card"><div class="card-t">Bedrijf &amp; locatie</div>
+<div style="margin-bottom:12px"><div class="f"><label>Startlocatie</label><input type="text" id="s_startloc" placeholder="Havenkant 2, 4781AA Moerdijk"></div></div>
+<div class="g2"><div class="f"><label>Winstdoel per maand (EUR excl. btw)</label><input type="number" id="s_winstdoel" placeholder="4000" min="0"></div>
+<div class="f"><label>Dieselprijs (EUR/liter)</label><input type="number" id="s_diesel" step="0.01" placeholder="1.75"><span style="font-size:11px;color:#aaa" id="s_dd"></span></div></div></div>
+<div class="card"><div class="card-t">Huurvrachtwagen</div>
+<div class="g4"><div class="f"><label>Dagtarief (EUR excl.)</label><input type="number" id="s_huur_dag" placeholder="230" oninput="calcV()"></div>
+<div class="f"><label>Verbruik (l/100km)</label><input type="number" id="s_huur_vbr" placeholder="28" step="0.1"></div>
+<div class="f"><label>Rijdagen/week</label><input type="number" id="s_huur_dgn" placeholder="2" min="1" max="7" oninput="calcV()"></div>
+<div class="f"><label>Wegenbelasting (EUR/km)</label><input type="number" id="s_wegbel" placeholder="0.20" step="0.01"></div></div></div>
+<div class="card"><div class="card-t">Scania</div>
+<div class="g4 mb"><div class="f"><label>Activatiedatum</label><input type="date" id="s_sc_datum" oninput="calcV()"></div>
+<div class="f"><label>Maandlease (EUR excl.)</label><input type="number" id="s_sc_lease" placeholder="1850" oninput="calcV()"></div>
+<div class="f"><label>Onderhoud (EUR excl./mnd)</label><input type="number" id="s_sc_ondh" placeholder="200" oninput="calcV()"></div>
+<div class="f"><label>Verbruik (l/100km)</label><input type="number" id="s_sc_vbr" placeholder="28" step="0.1"></div></div>
+<div class="hint" id="sc-prev">Vul activatiedatum in voor een vooruitblik.</div></div>
+<div class="card"><div class="card-t">Vaste lasten per maand</div>
+<div class="g4 mb"><div class="f"><label>Trailer lease (EUR incl./mnd)</label><input type="number" id="s_trailer" placeholder="500" oninput="calcV()"></div>
+<div class="f"><label>Verzekeringen (EUR/mnd)</label><input type="number" id="s_verz" placeholder="500" oninput="calcV()"></div>
+<div class="f"><label>Administratie (EUR incl./mnd)</label><input type="number" id="s_admin" placeholder="600" oninput="calcV()"></div>
+<div class="f"><label>Overig (EUR/mnd)</label><input type="number" id="s_overig" placeholder="0" oninput="calcV()"></div></div>
+<div style="font-size:13px;color:#666">Vaste lasten/week (excl. transport): <strong id="vaste-w">—</strong></div></div>
+<div class="card"><div class="card-t">Commissie Kaan</div>
+<div class="g4"><div class="f"><label>Commissie per vracht (EUR excl.)</label><input type="number" id="s_comm" placeholder="100"></div></div></div>
+<div class="card"><div class="card-t">Pallettypen &amp; reparatie</div>
+<div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 36px;gap:8px;padding:0 10px 8px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase">
+<span>Naam</span><span>Inkoop</span><span>Reparatie</span><span>Verkoop</span><span></span></div>
+<div id="prows"></div>
+<button class="btn btn-sm" onclick="addP()" style="margin-top:8px">+ Pallettype toevoegen</button></div>
+<div class="savebar"><span class="ok-msg" id="s-ok" style="display:none">✓ Opgeslagen</span>
+<button class="btn" onclick="loadDef()">Standaardwaarden</button>
+<button class="btn btn-p" onclick="saveS()">Instellingen opslaan</button></div>
+</div>
+
+<div id="pg-kl" class="pg">
+<div class="pg-title">Klantenbeheer</div>
+<div class="pg-sub">Adresgegevens worden gebruikt voor automatische routeberekening</div>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+<input type="text" id="kl-s" placeholder="Zoek naam, bedrijf of plaats..." oninput="renderK()" style="flex:1;padding:8px 12px;border:1px solid #d0d0c8;border-radius:8px;font-size:14px">
+<span style="font-size:12px;color:#888;white-space:nowrap" id="kl-cnt"></span>
+<button class="btn btn-p" onclick="openKM()">+ Klant toevoegen</button></div>
+<div class="card" style="padding:0;overflow:hidden">
+<table class="tbl"><thead><tr><th style="width:36px"></th><th>Bedrijfsnaam</th><th>Contactpersoon</th><th>Adres</th><th>Std. pallet</th><th>Notities</th><th style="width:100px"></th></tr></thead>
+<tbody id="kl-tb"></tbody></table>
+<div class="empty" id="kl-empty" style="display:none">Nog geen klanten — klik op <strong>+ Klant toevoegen</strong></div></div>
+</div>
+
+<div id="pg-week" class="pg">
+<div class="pg-title">Weekinvoer</div>
+<div class="pg-sub">Route: De Palletleverancier BV &rarr; stops &rarr; terug naar De Palletleverancier BV</div>
+<div class="card"><div class="g3 mb">
+<div class="f"><label>Weeknummer</label><input type="number" id="w_wk" min="1" max="53"></div>
+<div class="f"><label>Jaar</label><input type="number" id="w_jr"></div>
+<div class="f"><label>Dieselprijs (EUR/liter)</label><input type="number" id="w_diesel" step="0.01" placeholder="1.75" oninput="herb()"></div></div>
+<div class="f"><label>OpenRouteService API key</label><input type="text" id="w_ors" placeholder="Plak hier je ORS API key..." oninput="localStorage.setItem('pl_ors',this.value)"></div>
+<div class="hint" style="margin-top:8px">Gratis account via openrouteservice.org &rarr; Dashboard &rarr; API key kopiëren.</div></div>
+<div class="vcard">
+<div style="font-size:14px;font-weight:700;color:#085041;margin-bottom:14px">🔧 Veeke Palletreparatie — Voorraad</div>
+<div class="vmg"><div class="vm"><div class="vml">Huidig bij Veeke</div><div class="vmv" id="v-huidig">0</div></div>
+<div class="vm"><div class="vml">Gebracht deze week</div><div class="vmv" id="v-bracht">0</div></div>
+<div class="vm"><div class="vml">Opgehaald deze week</div><div class="vmv" id="v-opgh">0</div></div></div>
+<div class="g2"><div class="f"><label style="color:#0f6e56">Beginstand (pallets bij Veeke)</label><input type="number" id="v_begin" min="0" placeholder="0" oninput="updV()" style="background:rgba(255,255,255,.7)"></div>
+<div class="f"><label style="color:#0f6e56">Reparatietarief (EUR/pallet excl.)</label><input type="number" id="v_tar" step="0.01" placeholder="3.25" oninput="herb()" style="background:rgba(255,255,255,.7)"></div></div>
+<div id="v-log" style="font-size:12px;color:#085041;margin-top:8px"></div></div>
+<div class="day-block"><div class="day-h" onclick="togD(1)">
+<div class="day-hl">Dag 1 <span class="badge b-km" id="km1">0 km</span></div>
+<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm" onclick="event.stopPropagation();doRoute(1)">📍 Bereken route</button><span id="chev1">▾</span></div></div>
+<div class="day-b" id="db1"><div id="rv1" class="rv" style="display:none"></div><div id="st1"></div>
+<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm" onclick="addStop(1,'lev')">+ Levering</button><button class="btn btn-sm btn-g" onclick="addStop(1,'rep')">🔧 Veeke stop</button></div>
+<div id="rr1" style="display:none;margin-top:10px"></div></div></div>
+<div class="day-block"><div class="day-h" onclick="togD(2)">
+<div class="day-hl">Dag 2 <span class="badge b-km" id="km2">0 km</span></div>
+<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm" onclick="event.stopPropagation();doRoute(2)">📍 Bereken route</button><span id="chev2">▾</span></div></div>
+<div class="day-b" id="db2"><div id="rv2" class="rv" style="display:none"></div><div id="st2"></div>
+<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm" onclick="addStop(2,'lev')">+ Levering</button><button class="btn btn-sm btn-g" onclick="addStop(2,'rep')">🔧 Veeke stop</button></div>
+<div id="rr2" style="display:none;margin-top:10px"></div></div></div>
+<div class="card"><div class="card-t">Weekoverzicht</div>
+<div class="kpi-row"><div class="kpi"><div class="kpi-l">Totale omzet</div><div class="kpi-v" id="w-omz">€0</div></div>
+<div class="kpi"><div class="kpi-l">Inkoopkosten</div><div class="kpi-v" id="w-ink">€0</div></div>
+<div class="kpi"><div class="kpi-l">Alle kosten</div><div class="kpi-v" id="w-kos">€0</div></div>
+<div class="kpi"><div class="kpi-l">Nettowinst</div><div class="kpi-v" id="w-win">€0</div></div></div>
+<div class="sl sl-gr" id="w-sl">Voer leveringen in om resultaat te zien</div>
+<div class="div"></div><div class="card-t">Kostenverdeling</div><div id="w-kv"></div></div>
+<div style="display:flex;justify-content:flex-end;gap:8px">
+<button class="btn" onclick="nwWeek()">Nieuwe week</button>
+<button class="btn btn-p" onclick="slaOp()">Week opslaan</button></div>
+<div id="w-ok" style="font-size:13px;color:#276010;text-align:right;margin-top:6px;display:none">✓ Week opgeslagen</div>
+</div>
+
+<div id="pg-dash" class="pg">
+<div class="pg-title">Dashboard</div>
+<div class="pg-sub">Overzicht van je winst, kosten en trends</div>
+<div class="fil-bar">
+<button class="fb on" onclick="setFil('2w',this)">Laatste 2 weken</button>
+<button class="fb" onclick="setFil('4w',this)">Laatste 4 weken</button>
+<button class="fb" onclick="setFil('8w',this)">Laatste 8 weken</button>
+<button class="fb" onclick="setFil('12w',this)">Laatste 12 weken</button>
+<button class="fb" onclick="setFil('jaar',this)">Dit jaar</button></div>
+<div class="kpi-row">
+<div class="kpi"><div class="kpi-l">Totale omzet</div><div class="kpi-v" id="d-omz">—</div><div class="kpi-s" id="d-omz-s"></div></div>
+<div class="kpi"><div class="kpi-l">Nettowinst</div><div class="kpi-v" id="d-win">—</div><div class="kpi-s" id="d-win-s"></div></div>
+<div class="kpi"><div class="kpi-l">Gem. marge</div><div class="kpi-v" id="d-marg">—</div><div class="kpi-s" id="d-marg-s"></div></div>
+<div class="kpi"><div class="kpi-l">Totaal km</div><div class="kpi-v" id="d-km">—</div><div class="kpi-s" id="d-km-s"></div></div></div>
+<div class="sl sl-gr" id="d-sl">Nog geen weekdata — sla eerst een week op via Weekinvoer</div>
+<div class="card"><div class="card-t">Break-even &amp; doelstelling</div>
+<div class="be-row"><div class="be-c"><div class="be-v" id="be-be" style="color:#e74c3c">—</div><div class="be-l">Pallets break-even/week</div></div>
+<div class="be-c"><div class="be-v" id="be-doel" style="color:#27ae60">—</div><div class="be-l">Pallets winstdoel/week</div></div>
+<div class="be-c"><div class="be-v" id="be-ver">—</div><div class="be-l">Gem. boven/onder doel</div></div></div>
+<div style="font-size:12px;color:#888" id="be-hint"></div></div>
+<div class="card"><div class="card-t">Omzet vs kosten per week</div><div id="ch-bar"></div></div>
+<div class="card"><div class="card-t">Nettomarge % per week</div><div id="ch-marg"></div></div>
+<div class="g2" style="margin-bottom:14px">
+<div class="card" style="margin-bottom:0"><div class="card-t">Kostenverdeling</div><div id="ch-don"></div></div>
+<div class="card" style="margin-bottom:0"><div class="card-t">Nettowinst per maand</div><div id="ch-mnd"></div></div></div>
+<div class="vcard" id="d-sc" style="display:none">
+<div style="font-size:14px;font-weight:700;color:#085041;margin-bottom:10px">🚛 Scania overgangsmodule</div>
+<div id="d-sc-t" style="font-size:13px;color:#085041;line-height:1.9"></div></div>
+<div class="card"><div class="card-t">Weken detail</div><div id="d-tbl"></div></div>
+</div>
+
+</div></div>
+
+<div class="modal-bg" id="km-modal" style="display:none" onclick="if(event.target===this)closeKM()">
+<div class="modal"><div class="modal-t" id="km-ttl">Klant toevoegen</div>
+<div class="sec-l">Bedrijfsgegevens</div>
+<div class="g2 mb"><div class="f"><label>Bedrijfsnaam *</label><input type="text" id="kf_bedr"></div><div class="f"><label>Contactpersoon</label><input type="text" id="kf_cont"></div></div>
+<div class="g2 mb"><div class="f"><label>Telefoon</label><input type="tel" id="kf_tel"></div><div class="f"><label>E-mail</label><input type="email" id="kf_email"></div></div>
+<div class="sec-l">Afleveradres</div>
+<div class="f mb"><label>Straat + huisnummer *</label><input type="text" id="kf_str"></div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px" class="mb">
+<div class="f"><label>Plaats *</label><input type="text" id="kf_pl"></div>
+<div class="f"><label>Postcode</label><input type="text" id="kf_pc"></div>
+<div class="f"><label>Land</label><select id="kf_land"><option value="NL">Nederland</option><option value="BE">Belgie</option><option value="DE">Duitsland</option></select></div></div>
+<div class="sec-l">Voorkeur</div>
+<div class="g2 mb"><div class="f"><label>Standaard pallettype</label><select id="kf_pal"></select></div><div class="f"><label>Standaard aantal</label><input type="number" id="kf_ant" min="0"></div></div>
+<div class="f mb"><label>Notities</label><textarea id="kf_not" placeholder="Tijdvenster, bijzonderheden..."></textarea></div>
+<div id="kf_err" style="font-size:13px;color:#c0392b;display:none;margin-top:6px"></div>
+<div class="modal-ft"><button class="btn" onclick="closeKM()">Annuleren</button><button class="btn btn-p" onclick="saveK()">Opslaan</button></div></div></div>
+
+<script>
+var days={1:[],2:[]}, kmD={1:0,2:0}, dOpen={1:true,2:true};
+var pallets=[], editKId=null, dFil='2w';
+
+function GS(){try{return JSON.parse(localStorage.getItem('pl_s')||'{}')}catch(e){return{}}}
+function GC(){try{return JSON.parse(localStorage.getItem('pl_c')||'[]')}catch(e){return[]}}
+function SC(a){localStorage.setItem('pl_c',JSON.stringify(a))}
+function gv(id){var el=document.getElementById(id);return el?el.value:''}
+function sv(id,v){var el=document.getElementById(id);if(el)el.value=v}
+function getPals(){var s=GS();return(s.pallets&&s.pallets.length)?s.pallets:DEF.pallets}
+function getDepot(){return GS().startloc||'Havenkant 2, 4781AA Moerdijk'}
+function kp(naam){var p=getPals().filter(function(x){return x.naam===naam})[0];if(!p)return 0;return(parseFloat(p.inkoop)||0)+(p.rep_aan?(parseFloat(p.reparatie)||0):0)}
+function wkNum(d){var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));return Math.ceil((((dt-new Date(Date.UTC(dt.getUTCFullYear(),0,1)))/86400000)+1)/7)}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function fe(v){return'€'+Math.round(v).toLocaleString('nl-NL')}
+var CLR=[{b:'#e6f1fb',t:'#0c447c'},{b:'#eaf3de',t:'#274010'},{b:'#faeeda',t:'#633806'},{b:'#faece7',t:'#712b13'},{b:'#e1f5ee',t:'#085041'},{b:'#eeedfe',t:'#3c3489'}];
+function clr(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))&0xffff;return CLR[h%CLR.length]}
+function ini(n){var w=n.trim().split(/\s+/);return w.length>=2?(w[0][0]+w[w.length-1][0]).toUpperCase():n.slice(0,2).toUpperCase()}
+
+var DEF={startloc:'Havenkant 2, 4781AA Moerdijk',winstdoel:4000,diesel:1.75,huur_dag:230,huur_vbr:28,huur_dgn:2,wegbel:0.20,sc_datum:'',sc_lease:1850,sc_ondh:200,sc_vbr:28,trailer:500,verz:500,admin:600,overig:0,comm:100,
+pallets:[
+{naam:'EPAL (De Zwaluw)',inkoop:2.50,reparatie:3.25,rep_aan:true,verkoop:7.50},
+{naam:'Blokpallet (Kompak)',inkoop:0.60,reparatie:0,rep_aan:false,verkoop:3.75},
+{naam:'80/120 (Kompak)',inkoop:0.60,reparatie:0,rep_aan:false,verkoop:3.25},
+{naam:'CP3 (Ter Slaa)',inkoop:8.00,reparatie:0,rep_aan:false,verkoop:10.50},
+{naam:'102/120 (Modon)',inkoop:5.00,reparatie:0,rep_aan:false,verkoop:7.50}]};
+var SKEYS=['startloc','winstdoel','diesel','huur_dag','huur_vbr','huur_dgn','wegbel','sc_datum','sc_lease','sc_ondh','sc_vbr','trailer','verz','admin','overig','comm'];
+
+function nav(p){
+  ['inst','kl','week','dash'].forEach(function(id){
+    document.getElementById('pg-'+id).classList[id===p?'add':'remove']('on');
+  });
+  document.querySelectorAll('.sb-nav').forEach(function(el,i){
+    el.classList[['inst','kl','week','dash'][i]===p?'add':'remove']('on');
+  });
+  if(p==='dash')renderDash();
+  if(p==='week')initW();
+}
+
+function loadS(){
+  var raw=localStorage.getItem('pl_s');
+  var s=raw?JSON.parse(raw):DEF;
+  SKEYS.forEach(function(k){if(s[k]!==undefined&&s[k]!=='')sv('s_'+k,s[k])});
+  pallets=s.pallets?JSON.parse(JSON.stringify(s.pallets)):JSON.parse(JSON.stringify(DEF.pallets));
+  pallets.forEach(function(p){if(p.reparatie===undefined)p.reparatie=0;if(p.rep_aan===undefined)p.rep_aan=false});
+  if(s.diesel_datum)document.getElementById('s_dd').textContent='Update: '+s.diesel_datum;
+  renderPals();calcV();
+}
+function loadDef(){
+  SKEYS.forEach(function(k){if(DEF[k]!==undefined)sv('s_'+k,DEF[k])});
+  pallets=JSON.parse(JSON.stringify(DEF.pallets));renderPals();calcV();
+}
+function saveS(){
+  var s={};SKEYS.forEach(function(k){s[k]=gv('s_'+k)});
+  s.pallets=JSON.parse(JSON.stringify(pallets));s.diesel_datum=new Date().toLocaleDateString('nl-NL');
+  localStorage.setItem('pl_s',JSON.stringify(s));
+  document.getElementById('s_dd').textContent='Update: '+s.diesel_datum;
+  var ok=document.getElementById('s-ok');ok.style.display='inline';setTimeout(function(){ok.style.display='none'},3000);calcV();
+}
+function calcV(){
+  var tr=parseFloat(gv('s_trailer'))||0,ve=parseFloat(gv('s_verz'))||0,ad=parseFloat(gv('s_admin'))||0,ov=parseFloat(gv('s_overig'))||0;
+  var sd=gv('s_sc_datum'),sl=parseFloat(gv('s_sc_lease'))||0,so=parseFloat(gv('s_sc_ondh'))||0;
+  var sa=sd&&new Date(sd)<=new Date();var sm=sa?sl+so:0;
+  document.getElementById('vaste-w').textContent='€'+((tr+ve+ad+ov+sm)/4.33).toFixed(2)+'/week';
+  var hd=parseFloat(gv('s_huur_dag'))||230,hn=parseFloat(gv('s_huur_dgn'))||2;
+  var hm=hd*hn*4.33,st=sl+so,bs=hm-st;
+  var el=document.getElementById('sc-prev');
+  if(!sd){el.textContent='Vul activatiedatum in voor een vooruitblik.';return}
+  var d=new Date(sd),ds=d.toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  if(sa){el.innerHTML='Scania actief — vaste lasten omgeschakeld naar lease.'}
+  else{el.innerHTML='Verwacht op <strong>'+ds+'</strong>. Huurwagen nu: ca. €'+Math.round(hm)+'/mnd &rarr; Scania: €'+Math.round(st)+'/mnd. Besparing: <strong style="color:#085041">€'+Math.round(bs)+'/mnd</strong>'}
+}
+function renderPals(){
+  var c=document.getElementById('prows');c.innerHTML='';
+  pallets.forEach(function(p,i){
+    var kv=(parseFloat(p.inkoop)||0)+(p.rep_aan?(parseFloat(p.reparatie)||0):0);
+    var m=(p.verkoop&&kv>0)?((p.verkoop-kv)/kv*100).toFixed(0):null;
+    var ms=m!==null?(parseFloat(m)>=30?'background:#eaf3de;color:#276010':parseFloat(m)>=10?'background:#faeeda;color:#8a5500':'background:#fcebeb;color:#a32d2d'):'';
+    var row=document.createElement('div');row.className='prow';
+    row.innerHTML='<div class="f"><input type="text" value="'+esc(p.naam)+'" placeholder="Naam" oninput="pallets['+i+'].naam=this.value"></div>'
+      +'<div class="f"><input type="number" value="'+(p.inkoop||'')+'" step="0.01" min="0" placeholder="0.00" oninput="pallets['+i+'].inkoop=parseFloat(this.value)||0;renderPals()"></div>'
+      +'<div class="f"><div style="display:flex;align-items:center;gap:6px"><input type="checkbox" '+(p.rep_aan?'checked':'')+' onchange="pallets['+i+'].rep_aan=this.checked;renderPals()" style="width:15px;height:15px"><input type="number" value="'+(p.reparatie||'')+'" '+(p.rep_aan?'':'disabled')+' step="0.01" min="0" placeholder="0.00" oninput="pallets['+i+'].reparatie=parseFloat(this.value)||0;renderPals()" style="'+(p.rep_aan?'':'opacity:.4')+'"></div>'+(p.rep_aan?'<span style="font-size:10px;color:#aaa">kostprijs: €'+kv.toFixed(2)+'</span>':'')+'</div>'
+      +'<div class="f"><input type="number" value="'+(p.verkoop||'')+'" step="0.01" min="0" placeholder="0.00" oninput="pallets['+i+'].verkoop=parseFloat(this.value)||0;renderPals()">'+(m!==null?'<span class="mp" style="'+ms+'">'+m+'% marge</span>':'')+'</div>'
+      +'<button class="btn btn-sm btn-d" onclick="pallets.splice('+i+',1);renderPals()" style="height:36px">✕</button>';
+    c.appendChild(row);
+  });
+}
+function addP(){pallets.push({naam:'',inkoop:0,reparatie:0,rep_aan:false,verkoop:0});renderPals()}
+
+function renderK(){
+  var q=(gv('kl-s')||'').toLowerCase();
+  var all=GC();document.getElementById('kl-cnt').textContent=all.length+' klanten';
+  var cl=q?all.filter(function(c){return(c.bedrijf||'').toLowerCase().indexOf(q)>=0||(c.contact||'').toLowerCase().indexOf(q)>=0||(c.plaats||'').toLowerCase().indexOf(q)>=0}):all;
+  var tb=document.getElementById('kl-tb'),em=document.getElementById('kl-empty');
+  if(!cl.length){tb.innerHTML='';em.style.display='block';return}em.style.display='none';
+  tb.innerHTML=cl.map(function(c){
+    var col=clr(c.bedrijf||'?'),adr=[c.straat,c.postcode,c.plaats].filter(Boolean).join(', ');
+    return'<tr><td><div class="ini" style="background:'+col.b+';color:'+col.t+'">'+ini(c.bedrijf||'?')+'</div></td>'
+      +'<td><strong>'+esc(c.bedrijf||'—')+'</strong></td>'
+      +'<td style="color:#888">'+esc(c.contact||'—')+'</td>'
+      +'<td style="color:#888;font-size:12px">'+esc(adr||'—')+'</td>'
+      +'<td>'+(c.pallet?'<span class="badge b-bl">'+esc(c.pallet)+'</span>':'—')+'</td>'
+      +'<td style="color:#bbb;font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.notities||'')+'</td>'
+      +'<td><div class="racts"><button class="btn btn-sm" onclick="openKM(\''+c.id+'\')">Bewerken</button><button class="btn btn-sm btn-d" onclick="delK(\''+c.id+'\')">✕</button></div></td></tr>';
+  }).join('');
+}
+function openKM(id){
+  editKId=id||null;document.getElementById('km-ttl').textContent=id?'Klant bewerken':'Klant toevoegen';
+  var sel=document.getElementById('kf_pal');sel.innerHTML='<option value="">— geen voorkeur —</option>';
+  getPals().forEach(function(p){var o=document.createElement('option');o.value=p.naam;o.textContent=p.naam;sel.appendChild(o)});
+  if(id){var c=GC().filter(function(x){return x.id===id})[0];
+    if(c){['bedr','cont','tel','email','str','pl','pc','not'].forEach(function(f){sv('kf_'+f,c[{bedr:'bedrijf',cont:'contact',tel:'tel',email:'email',str:'straat',pl:'plaats',pc:'postcode',not:'notities'}[f]]||'')});sv('kf_land',c.land||'NL');sv('kf_pal',c.pallet||'');sv('kf_ant',c.aantal||'')}
+  }else{['bedr','cont','tel','email','str','pl','pc','not','ant'].forEach(function(f){sv('kf_'+f,'')});sv('kf_land','NL');sv('kf_pal','')}
+  document.getElementById('kf_err').style.display='none';document.getElementById('km-modal').style.display='flex';
+}
+function closeKM(){document.getElementById('km-modal').style.display='none'}
+function saveK(){
+  var bedr=gv('kf_bedr').trim(),str=gv('kf_str').trim(),pl=gv('kf_pl').trim();
+  var err=document.getElementById('kf_err');
+  if(!bedr){err.textContent='Bedrijfsnaam is verplicht.';err.style.display='block';return}
+  if(!str||!pl){err.textContent='Straat en plaats zijn verplicht.';err.style.display='block';return}
+  err.style.display='none';
+  var cls=GC(),obj={id:editKId||(Date.now().toString(36)+Math.random().toString(36).slice(2)),bedrijf:bedr,contact:gv('kf_cont').trim(),tel:gv('kf_tel').trim(),email:gv('kf_email').trim(),straat:str,plaats:pl,postcode:gv('kf_pc').trim(),land:gv('kf_land'),pallet:gv('kf_pal'),aantal:parseInt(gv('kf_ant'))||0,notities:gv('kf_not').trim()};
+  if(editKId){var ix=cls.findIndex(function(x){return x.id===editKId});if(ix>=0)cls[ix]=obj}else cls.push(obj);
+  SC(cls);closeKM();renderK();
+}
+function delK(id){if(!confirm('Klant verwijderen?'))return;SC(GC().filter(function(x){return x.id!==id}));renderK()}
+
+function initW(){
+  var now=new Date();sv('w_wk',wkNum(now));sv('w_jr',now.getFullYear());
+  var s=GS();sv('w_diesel',s.diesel||1.75);sv('w_ors',localStorage.getItem('pl_ors')||'');
+  var ep=(s.pallets||[]).filter(function(p){return p.naam&&p.naam.toLowerCase().indexOf('epal')>=0})[0];
+  sv('v_tar',ep?ep.reparatie||3.25:3.25);
+  var vd=JSON.parse(localStorage.getItem('pl_veeke')||'{"voorraad":0}');sv('v_begin',vd.voorraad||0);
+  if(!days[1].length)addStop(1,'lev');if(!days[2].length)addStop(2,'lev');updV();
+}
+function togD(d){dOpen[d]=!dOpen[d];document.getElementById('db'+d).style.display=dOpen[d]?'block':'none';document.getElementById('chev'+d).textContent=dOpen[d]?'▾':'▸'}
+function updV(){
+  var begin=parseInt(gv('v_begin'))||0,bracht=0,opgh=0,log=[];
+  [1,2].forEach(function(dag){days[dag].forEach(function(s){
+    if(s.type==='rep'){
+      if(s.actie==='brengen'||s.actie==='beide'){bracht+=s.brengen||0;if(s.brengen>0)log.push('Dag '+dag+': '+s.brengen+' gebracht')}
+      if(s.actie==='ophalen'||s.actie==='beide'){opgh+=s.ophalen||0;if(s.ophalen>0)log.push('Dag '+dag+': '+s.ophalen+' opgehaald')}
+    }
+  })});
+  document.getElementById('v-huidig').textContent=begin+bracht-opgh;
+  document.getElementById('v-bracht').textContent=bracht;
+  document.getElementById('v-opgh').textContent=opgh;
+  document.getElementById('v-log').innerHTML=log.map(function(l){return'<div>'+l+'</div>'}).join('');
+  herb();
+}
+function updRV(dag){
+  var vis=document.getElementById('rv'+dag);var stops=days[dag];
+  if(!stops.length){vis.style.display='none';return}vis.style.display='flex';
+  var h='<span class="rnh">🏠 Depot</span>';
+  stops.forEach(function(s,i){
+    if(s.type==='rep'){h+='<span class="rnarr">→</span><span class="rnr">🔧 Veeke</span>'}
+    else{var cl=GC().filter(function(c){return c.id===s.cId})[0];h+='<span class="rnarr">→</span><span class="rns">'+esc(cl?cl.bedrijf:'Stop '+(i+1))+'</span>'}
+  });
+  h+='<span class="rnarr">→</span><span class="rnh">🏠 Depot</span>';vis.innerHTML=h;
+}
+function renderSt(dag){
+  var c=document.getElementById('st'+dag);c.innerHTML='';var s=GS();
+  days[dag].forEach(function(stop,i){
+    var div=document.createElement('div');
+    if(stop.type==='rep'){
+      div.className='sc scr';var tar=parseFloat(gv('v_tar'))||3.25;
+      div.innerHTML='<div class="sch"><div style="display:flex;align-items:center;gap:8px"><span class="badge b-tl">🔧 Veeke stop '+(i+1)+'</span></div><button class="btn btn-sm btn-d" onclick="remStop('+dag+','+i+')">✕</button></div>'
+        +'<div class="g3 mb"><div class="f"><label style="color:#0f6e56">Actie</label><select onchange="days['+dag+']['+i+'].actie=this.value;renderSt('+dag+')" style="background:rgba(255,255,255,.7)"><option value="brengen" '+(stop.actie==='brengen'?'selected':'')+'>Pallets brengen</option><option value="ophalen" '+(stop.actie==='ophalen'?'selected':'')+'>Pallets ophalen</option><option value="beide" '+(stop.actie==='beide'?'selected':'')+'>Brengen + ophalen</option></select></div>'
+        +(stop.actie==='brengen'||stop.actie==='beide'?'<div class="f"><label style="color:#0f6e56">Aantal te brengen</label><input type="number" class="big" min="0" value="'+(stop.brengen||'')+'" placeholder="0" oninput="days['+dag+']['+i+'].brengen=parseInt(this.value)||0;updV()" style="background:rgba(255,255,255,.7)"></div>':'<div></div>')
+        +(stop.actie==='ophalen'||stop.actie==='beide'?'<div class="f"><label style="color:#0f6e56">Aantal op te halen</label><input type="number" class="big" min="0" value="'+(stop.ophalen||'')+'" placeholder="0" oninput="days['+dag+']['+i+'].ophalen=parseInt(this.value)||0;updV()" style="background:rgba(255,255,255,.7)"></div>':'<div></div>')
+        +'</div>'+((stop.actie==='ophalen'||stop.actie==='beide')?'<div style="font-size:12px;color:#085041">Reparatiekosten: <strong>€'+((stop.ophalen||0)*tar).toFixed(2)+'</strong></div>':'');
+    }else{
+      var kkp=kp(stop.pallet),m=(stop.verkoop&&kkp>0)?((stop.verkoop-kkp)/kkp*100).toFixed(0):null;
+      var ms=m!==null?(parseFloat(m)>=30?'background:#eaf3de;color:#276010':parseFloat(m)>=10?'background:#faeeda;color:#8a5500':'background:#fcebeb;color:#a32d2d'):'';
+      div.className='sc scl';
+      div.innerHTML='<div class="sch"><div style="display:flex;align-items:center;gap:8px"><span class="badge b-bl">Levering '+(i+1)+'</span>'+(stop.adres?'<span style="font-size:11px;color:#bbb">'+esc(stop.adres)+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="remStop('+dag+','+i+')">✕</button></div>'
+        +'<div class="g2 mb"><div class="f"><label>Klant</label><select onchange="onCC('+dag+','+i+',this.value)" id="sc'+dag+'_'+i+'"></select></div><div class="f"><label>Pallettype</label><select onchange="days['+dag+']['+i+'].pallet=this.value;days['+dag+']['+i+'].inkoop=kp(this.value);herb()" id="sp'+dag+'_'+i+'"></select></div></div>'
+        +'<div class="g3 mb"><div class="f"><label>Aantal pallets</label><input type="number" class="big" min="0" value="'+(stop.aantal||'')+'" placeholder="0" oninput="days['+dag+']['+i+'].aantal=parseInt(this.value)||0;herb()"></div>'
+        +'<div class="f"><label>Inkoop p/st (EUR excl.)</label><input type="number" step="0.01" min="0" value="'+(stop.inkoop||'')+'" placeholder="0.00" oninput="days['+dag+']['+i+'].inkoop=parseFloat(this.value)||0;herb()">'+(kkp>0?'<span style="font-size:11px;color:#aaa">kostprijs: €'+kkp.toFixed(2)+'</span>':'')+'</div>'
+        +'<div class="f"><label>Verkoop p/st (EUR excl.)</label><input type="number" step="0.01" min="0" value="'+(stop.verkoop||'')+'" placeholder="0.00" oninput="days['+dag+']['+i+'].verkoop=parseFloat(this.value)||0;herb()">'+(m!==null?'<span class="mp" style="'+ms+'">'+m+'% marge</span>':'')+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:8px;border-top:1px solid #f0f0e8"><label class="ktog"><input type="checkbox" '+(stop.kaan?'checked':'')+' onchange="days['+dag+']['+i+'].kaan=this.checked;herb()"> Geregeld door Kaan</label>'
+        +(stop.kaan?'<span style="font-size:12px;color:#888">Commissie: €'+((parseFloat(s.comm)||100).toFixed(2))+'</span>':'')
+        +((stop.aantal&&stop.verkoop)?'<span style="font-size:13px;color:#888">Omzet: <strong>€'+((stop.aantal||0)*(stop.verkoop||0)).toFixed(2)+'</strong></span>':'')+'</div>';
+    }
+    c.appendChild(div);
+    if(stop.type!=='rep'){
+      var csel=document.getElementById('sc'+dag+'_'+i);csel.innerHTML='<option value="">— kies klant —</option>';
+      GC().forEach(function(cl){var o=document.createElement('option');o.value=cl.id;o.textContent=cl.bedrijf;if(cl.id===stop.cId)o.selected=true;csel.appendChild(o)});
+      var psel=document.getElementById('sp'+dag+'_'+i);psel.innerHTML='<option value="">— type —</option>';
+      getPals().forEach(function(p){var o=document.createElement('option');o.value=p.naam;o.textContent=p.naam;if(p.naam===stop.pallet)o.selected=true;psel.appendChild(o)});
+    }
+  });
+  updRV(dag);herb();
+}
+function onCC(dag,i,cId){
+  var cl=GC().filter(function(x){return x.id===cId})[0];
+  days[dag][i].cId=cId;days[dag][i].coords=null;
+  if(cl){days[dag][i].adres=[cl.straat,cl.postcode,cl.plaats].filter(Boolean).join(', ');
+    if(!days[dag][i].pallet&&cl.pallet){days[dag][i].pallet=cl.pallet;days[dag][i].inkoop=kp(cl.pallet)}
+    if(!days[dag][i].aantal&&cl.aantal)days[dag][i].aantal=cl.aantal}
+  renderSt(dag);
+}
+function addStop(dag,type){
+  if(type==='rep')days[dag].push({type:'rep',actie:'brengen',brengen:0,ophalen:0,adres:'Veeke Palletreparatie, Moerdijk',coords:null});
+  else days[dag].push({type:'lev',cId:'',pallet:'',aantal:0,inkoop:0,verkoop:0,kaan:false,adres:'',coords:null});
+  renderSt(dag);
+}
+function remStop(dag,i){days[dag].splice(i,1);renderSt(dag)}
+
+async function geocode(adr,key){
+  try{var r=await fetch('https://api.openrouteservice.org/geocode/search?api_key='+key+'&text='+encodeURIComponent(adr)+'&boundary.country=NL,BE,DE&size=1');
+  var d=await r.json();if(d.features&&d.features[0])return d.features[0].geometry.coordinates}catch(e){}return null;
+}
+async function doRoute(dag){
+  var key=gv('w_ors').trim();if(!key){alert('Vul eerst je ORS API key in.');return}
+  var rr=document.getElementById('rr'+dag);rr.style.display='block';rr.innerHTML='<span class="spin">◌</span> Route berekenen...';rr.style.cssText='display:block;margin-top:10px;padding:8px 12px;background:#f7f7f5;border-radius:8px;font-size:13px';
+  try{
+    var dc=await geocode(getDepot(),key);if(!dc){rr.innerHTML='⚠ Depotlocatie niet gevonden. Controleer adres in Instellingen.';return}
+    var stops=days[dag].filter(function(x){return x.adres});if(!stops.length){rr.innerHTML='⚠ Geen stops met adres.';return}
+    for(var i=0;i<stops.length;i++){if(!stops[i].coords)stops[i].coords=await geocode(stops[i].adres,key)}
+    var coords=[dc].concat(stops.filter(function(s){return s.coords}).map(function(s){return s.coords})).concat([dc]);
+    var resp=await fetch('https://api.openrouteservice.org/v2/directions/driving-hgv',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({coordinates:coords,units:'km'})});
+    var data=await resp.json();
+    if(data.routes&&data.routes[0]){
+      var km=Math.round(data.routes[0].summary.distance),mins=Math.round(data.routes[0].summary.duration/60),u=Math.floor(mins/60),m=mins%60;
+      kmD[dag]=km;document.getElementById('km'+dag).textContent=km+' km';
+      rr.style.cssText='display:block;margin-top:10px;padding:8px 14px;background:#eaf3de;border-radius:8px;font-size:13px;color:#276010';
+      rr.innerHTML='✓ <strong>'+km+' km</strong> · Ca. <strong>'+(u>0?u+'u ':'')+m+' min</strong> · <span style="color:#666;font-size:12px">Depot &rarr; '+stops.filter(function(s){return s.coords}).length+' stops &rarr; Depot</span>';
+      herb();
+    }else{rr.innerHTML='⚠ '+(data.error&&data.error.message?data.error.message:'Route niet berekend')}
+  }catch(e){rr.innerHTML='⚠ Fout: '+e.message}
+}
+function herb(){
+  var s=GS(),diesel=parseFloat(gv('w_diesel'))||parseFloat(s.diesel)||1.75;
+  var totKm=(kmD[1]||0)+(kmD[2]||0);
+  var isS=s.sc_datum&&new Date(s.sc_datum)<=new Date();
+  var vbr=parseFloat(isS?s.sc_vbr:s.huur_vbr)||28;
+  var dK=totKm*(vbr/100)*diesel,wK=totKm*(parseFloat(s.wegbel)||0.20),hK=isS?0:(parseFloat(s.huur_dag)||230)*2;
+  var tK=dK+wK+hK,vMnd=(parseFloat(s.trailer)||0)+(parseFloat(s.verz)||0)+(parseFloat(s.admin)||0)+(parseFloat(s.overig)||0)+(isS?(parseFloat(s.sc_lease)||0)+(parseFloat(s.sc_ondh)||0):0);
+  var vWk=vMnd/4.33,vtar=parseFloat(gv('v_tar'))||3.25;
+  var veekeK=0,omz=0,ink=0,com=0;
+  [1,2].forEach(function(dag){days[dag].forEach(function(st){
+    if(st.type==='rep'){if(st.actie==='ophalen'||st.actie==='beide')veekeK+=(st.ophalen||0)*vtar}
+    else{omz+=(st.aantal||0)*(st.verkoop||0);ink+=(st.aantal||0)*(st.inkoop||0);if(st.kaan)com+=parseFloat(s.comm)||100}
+  })});
+  var bruto=omz-ink,totK=tK+vWk+com+veekeK,netto=bruto-totK,doelW=(parseFloat(s.winstdoel)||4000)/4.33;
+  document.getElementById('w-omz').textContent='€'+omz.toFixed(2);
+  document.getElementById('w-ink').textContent='€'+ink.toFixed(2);
+  document.getElementById('w-kos').textContent='€'+totK.toFixed(2);
+  document.getElementById('w-win').textContent='€'+netto.toFixed(2);
+  var sl=document.getElementById('w-sl');
+  if(omz===0){sl.className='sl sl-gr';sl.textContent='Voer leveringen in om resultaat te zien'}
+  else if(netto>=doelW){sl.className='sl sl-g';sl.textContent='✓ Op koers — boven weekdoelstelling (€'+Math.round(doelW)+')'}
+  else if(netto>0){sl.className='sl sl-o';sl.textContent='▲ Positief maar onder weekdoel — tekort: €'+Math.round(doelW-netto)}
+  else{sl.className='sl sl-r';sl.textContent='✕ Verlies deze week — actie vereist'}
+  var rows=[['Omzet','€'+omz.toFixed(2)],['Inkoopkosten','- €'+ink.toFixed(2)],['Reparatiekosten Veeke','- €'+veekeK.toFixed(2)],['Brutowinst','€'+(bruto-veekeK).toFixed(2)],[isS?'Scania lease/week':'Huurwagen (2 dgn)','- €'+hK.toFixed(2)],['Diesel ('+totKm+' km)','- €'+dK.toFixed(2)],['Wegenbelasting','- €'+wK.toFixed(2)],['Vaste lasten (weekdeel)','- €'+vWk.toFixed(2)],['Commissie Kaan','- €'+com.toFixed(2)],['Nettowinst','€'+netto.toFixed(2)]];
+  document.getElementById('w-kv').innerHTML=rows.map(function(r,i){return'<div class="cr"'+(i===rows.length-1?' style="font-weight:700"':'')+'><span>'+r[0]+'</span><span>'+r[1]+'</span></div>'}).join('');
+}
+function slaOp(){
+  var wk=gv('w_wk'),jr=gv('w_jr'),key='pl_w_'+jr+'_'+wk;
+  var es=parseInt(document.getElementById('v-huidig').textContent)||0;
+  localStorage.setItem('pl_veeke',JSON.stringify({voorraad:es,ts:new Date().toISOString()}));
+  localStorage.setItem(key,JSON.stringify({week:wk,jaar:jr,days:days,kmDay:kmD,diesel:gv('w_diesel'),ts:new Date().toISOString()}));
+  var idx=JSON.parse(localStorage.getItem('pl_wi')||'[]');if(idx.indexOf(key)<0)idx.push(key);
+  localStorage.setItem('pl_wi',JSON.stringify(idx));
+  var ok=document.getElementById('w-ok');ok.style.display='block';setTimeout(function(){ok.style.display='none'},3000);
+}
+function nwWeek(){
+  if(!confirm('Nieuwe week starten? Huidige invoer wordt gewist.'))return;
+  var es=parseInt(document.getElementById('v-huidig').textContent)||0;
+  days={1:[],2:[]};kmD={1:0,2:0};
+  [1,2].forEach(function(d){document.getElementById('rr'+d).style.display='none';document.getElementById('km'+d).textContent='0 km';document.getElementById('rv'+d).style.display='none'});
+  var now=new Date();sv('w_wk',wkNum(now));sv('w_jr',now.getFullYear());sv('v_begin',es);
+  addStop(1,'lev');addStop(2,'lev');updV();
+}
+
+function calcW(w){
+  var s=GS(),diesel=parseFloat(w.diesel)||parseFloat(s.diesel)||1.75;
+  var dd=w.days||{1:[],2:[]},kd=w.kmDay||{1:0,2:0},totKm=(kd[1]||0)+(kd[2]||0);
+  var isS=s.sc_datum&&new Date(s.sc_datum)<=new Date();
+  var vbr=parseFloat(isS?s.sc_vbr:s.huur_vbr)||28;
+  var dK=totKm*(vbr/100)*diesel,wK=totKm*(parseFloat(s.wegbel)||0.20),hK=isS?0:(parseFloat(s.huur_dag)||230)*2;
+  var vMnd=(parseFloat(s.trailer)||0)+(parseFloat(s.verz)||0)+(parseFloat(s.admin)||0)+(parseFloat(s.overig)||0)+(isS?(parseFloat(s.sc_lease)||0)+(parseFloat(s.sc_ondh)||0):0);
+  var vWk=vMnd/4.33,vt=3.25;
+  var ep=(s.pallets||[]).filter(function(p){return p.naam&&p.naam.toLowerCase().indexOf('epal')>=0})[0];
+  if(ep)vt=parseFloat(ep.reparatie)||3.25;
+  var vK=0,omz=0,ink=0,com=0,nP=0;
+  [1,2].forEach(function(dag){(dd[dag]||[]).forEach(function(st){
+    if(st.type==='rep'){if(st.actie==='ophalen'||st.actie==='beide')vK+=(st.ophalen||0)*vt}
+    else{omz+=(st.aantal||0)*(st.verkoop||0);ink+=(st.aantal||0)*(st.inkoop||0);nP+=(st.aantal||0);if(st.kaan)com+=parseFloat(s.comm)||100}
+  })});
+  var bruto=omz-ink,totK=dK+wK+hK+vWk+com+vK,netto=bruto-totK;
+  return{lbl:'W'+w.week+"'"+String(w.jaar).slice(2),week:parseInt(w.week),jaar:parseInt(w.jaar),sk:parseInt(w.jaar)*100+parseInt(w.week),omz:omz,ink:ink,bruto:bruto,tK:dK+wK+hK,vWk:vWk,com:com,vK:vK,totK:totK,netto:netto,marge:omz>0?netto/omz*100:0,totKm:totKm,nP:nP,dK:dK,wK:wK,hK:hK};
+}
+function getAll(){return JSON.parse(localStorage.getItem('pl_wi')||'[]').map(function(k){var r=localStorage.getItem(k);return r?calcW(JSON.parse(r)):null}).filter(Boolean).sort(function(a,b){return a.sk-b.sk})}
+function filW(weken){if(dFil==='jaar')return weken.filter(function(w){return w.jaar===new Date().getFullYear()});var n=dFil==='2w'?2:dFil==='4w'?4:dFil==='8w'?8:12;return weken.slice(-n)}
+function setFil(f,el){dFil=f;document.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on')});el.classList.add('on');renderDash()}
+
+function renderDash(){
+  var all=getAll(),weken=filW(all),s=GS(),doelW=(parseFloat(s.winstdoel)||4000)/4.33;
+  if(!weken.length){['d-omz','d-win','d-marg','d-km'].forEach(function(id){document.getElementById(id).textContent='—'});var dsl=document.getElementById('d-sl');dsl.className='sl sl-gr';dsl.textContent='Nog geen weekdata — sla eerst een week op via Weekinvoer';renderSc(s);return}
+  var tO=weken.reduce(function(a,w){return a+w.omz},0),tW=weken.reduce(function(a,w){return a+w.netto},0),tK=weken.reduce(function(a,w){return a+w.totKm},0),gM=tO>0?tW/tO*100:0;
+  document.getElementById('d-omz').textContent=fe(tO);document.getElementById('d-omz-s').textContent='gem. '+fe(tO/weken.length)+'/week';
+  document.getElementById('d-win').textContent=fe(tW);document.getElementById('d-win-s').textContent='gem. '+fe(tW/weken.length)+'/week';
+  document.getElementById('d-marg').textContent=gM.toFixed(1)+'%';document.getElementById('d-marg-s').textContent='netto over omzet';
+  document.getElementById('d-km').textContent=tK.toLocaleString('nl-NL')+' km';document.getElementById('d-km-s').textContent='gem. '+Math.round(tK/weken.length)+' km/week';
+  var laats=weken[weken.length-1],dsl=document.getElementById('d-sl');
+  if(laats.netto>=doelW){dsl.className='sl sl-g';dsl.textContent='✓ Laatste week op koers — '+fe(laats.netto)}
+  else if(laats.netto>0){dsl.className='sl sl-o';dsl.textContent='▲ Positief maar onder weekdoel (€'+Math.round(doelW)+') — tekort: €'+Math.round(doelW-laats.netto)}
+  else{dsl.className='sl sl-r';dsl.textContent='✕ Laatste week verlies: '+fe(laats.netto)+' — actie vereist'}
+  var gI=weken.reduce(function(a,w){return a+w.ink},0)/Math.max(weken.reduce(function(a,w){return a+w.nP},0),1);
+  var gV=weken.reduce(function(a,w){return a+w.omz},0)/Math.max(weken.reduce(function(a,w){return a+w.nP},0),1);
+  var gVK=weken.reduce(function(a,w){return a+w.totK-w.ink},0)/weken.length,mpp=gV-gI;
+  var beBE=mpp>0?Math.ceil(gVK/mpp):0,beDoel=mpp>0?Math.ceil((gVK+doelW)/mpp):0;
+  var gP=Math.round(weken.reduce(function(a,w){return a+w.nP},0)/weken.length),ver=gP-beDoel;
+  document.getElementById('be-be').textContent=beBE||'—';document.getElementById('be-doel').textContent=beDoel||'—';
+  document.getElementById('be-ver').textContent=(ver>=0?'+':'')+ver;document.getElementById('be-ver').style.color=ver>=0?'#27ae60':'#e74c3c';
+  document.getElementById('be-hint').textContent='Gem. verkoopprijs €'+gV.toFixed(2)+'/pallet, kostprijs €'+gI.toFixed(2)+'/pallet.';
+  drawBar(weken);drawMarg(weken);drawDon(weken);drawMnd(all,parseFloat(s.winstdoel)||4000);drawTbl(weken,doelW);renderSc(s);
+}
+
+function svgBar(weken){
+  var W=600,H=200,pl=60,pr=20,pt=10,pb=40,cw=W-pl-pr,ch=H-pt-pb;
+  var allV=[];weken.forEach(function(w){allV.push(w.omz,w.totK,w.netto)});
+  var mx=Math.max.apply(null,allV.map(Math.abs))||1,mn=Math.min.apply(null,allV)||0;
+  var rMin=Math.min(mn,0),rMax=mx*1.1,range=rMax-rMin||1;
+  var n=weken.length,bw=Math.floor(cw/n),gbw=Math.max(4,Math.floor((bw-8)/3));
+  var zy=pt+ch*(1-(-rMin)/range),svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%">';
+  [0,.25,.5,.75,1].forEach(function(t){var y=pt+ch*(1-t),v=rMin+range*t;svg+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-pr)+'" y2="'+y+'" stroke="#f0f0e8" stroke-width="1"/><text x="'+(pl-5)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="#aaa">€'+Math.round(v/1000)+'k</text>'});
+  svg+='<line x1="'+pl+'" y1="'+zy+'" x2="'+(W-pr)+'" y2="'+zy+'" stroke="#ddd" stroke-width="1.5"/>';
+  weken.forEach(function(w,i){
+    var x=pl+i*bw+4;
+    [[w.omz,'#378ADD'],[w.totK,'#F09595'],[w.netto,'#1D9E75']].forEach(function(p,j){
+      var v=p[0],col=p[1],bx=x+j*gbw,by,bh;
+      if(v>=0){by=pt+ch*(1-(v-rMin)/range);bh=zy-by}else{by=zy;bh=Math.abs(pt+ch*(1-(v-rMin)/range)-zy)}
+      if(bh<1)bh=1;svg+='<rect x="'+bx+'" y="'+by+'" width="'+(gbw-2)+'" height="'+bh+'" fill="'+col+'" rx="2"/>';
+    });
+    svg+='<text x="'+(x+bw/2-8)+'" y="'+(H-6)+'" text-anchor="middle" font-size="10" fill="#888">'+w.lbl+'</text>';
+  });
+  [['Omzet','#378ADD'],['Kosten','#F09595'],['Nettowinst','#1D9E75']].forEach(function(l,i){var lx=pl+i*90;svg+='<rect x="'+lx+'" y="'+(H-24)+'" width="10" height="10" fill="'+l[1]+'" rx="2"/><text x="'+(lx+14)+'" y="'+(H-15)+'" font-size="11" fill="#888">'+l[0]+'</text>'});
+  return svg+'</svg>';
+}
+function drawBar(w){document.getElementById('ch-bar').innerHTML=svgBar(w)}
+
+function svgMarg(weken){
+  var W=600,H=160,pl=50,pr=20,pt=10,pb=35,cw=W-pl-pr,ch=H-pt-pb;
+  var vals=weken.map(function(w){return w.marge}),mx=Math.max.apply(null,vals.map(Math.abs))||10,mn=Math.min.apply(null,vals)||0;
+  var rMin=Math.min(mn,0)-2,rMax=mx*1.2+2,range=rMax-rMin||1,n=weken.length;
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%">';
+  [0,.5,1].forEach(function(t){var y=pt+ch*(1-t),v=rMin+range*t;svg+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-pr)+'" y2="'+y+'" stroke="#f0f0e8" stroke-width="1"/><text x="'+(pl-5)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="#aaa">'+Math.round(v)+'%</text>'});
+  if(n>1){
+    var pts=weken.map(function(w,i){var x=pl+(i/(n-1))*cw,y=pt+ch*(1-(w.marge-rMin)/range);return x+','+y});
+    svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linejoin="round"/>';
+    weken.forEach(function(w,i){var x=pl+(i/(n-1))*cw,y=pt+ch*(1-(w.marge-rMin)/range);svg+='<circle cx="'+x+'" cy="'+y+'" r="4" fill="#1D9E75"/>'});
+  }
+  weken.forEach(function(w,i){var x=pl+(n>1?(i/(n-1))*cw:cw/2);svg+='<text x="'+x+'" y="'+(H-5)+'" text-anchor="middle" font-size="10" fill="#aaa">'+w.lbl+'</text>'});
+  return svg+'</svg>';
+}
+function drawMarg(w){document.getElementById('ch-marg').innerHTML=svgMarg(w)}
+
+function svgDon(weken){
+  var tots=[weken.reduce(function(a,w){return a+w.tK},0),weken.reduce(function(a,w){return a+w.vWk},0),weken.reduce(function(a,w){return a+w.ink},0),weken.reduce(function(a,w){return a+w.com},0),weken.reduce(function(a,w){return a+w.vK},0)];
+  var lbls=['Transport','Vaste lasten','Inkoop','Commissie Kaan','Veeke'],cols=['#378ADD','#7F77DD','#F09595','#EF9F27','#5DCAA5'];
+  var total=tots.reduce(function(a,v){return a+v},0)||1;
+  var W=300,H=290,cx=150,cy=130,r=90,ri=55,ang=-Math.PI/2;
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%">';
+  tots.forEach(function(v,i){
+    var sw=v/total*Math.PI*2,x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang),x2=cx+r*Math.cos(ang+sw),y2=cy+r*Math.sin(ang+sw);
+    var xi1=cx+ri*Math.cos(ang),yi1=cy+ri*Math.sin(ang),xi2=cx+ri*Math.cos(ang+sw),yi2=cy+ri*Math.sin(ang+sw),lg=sw>Math.PI?1:0;
+    if(v>0)svg+='<path d="M '+xi1+' '+yi1+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L '+xi2+' '+yi2+' A '+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+cols[i]+'"/>';
+    ang+=sw;
+  });
+  tots.forEach(function(v,i){var lx=6,ly=H-90+i*19;svg+='<rect x="'+lx+'" y="'+(ly-9)+'" width="11" height="11" fill="'+cols[i]+'" rx="2"/><text x="'+(lx+15)+'" y="'+ly+'" font-size="11" fill="#666">'+lbls[i]+' (€'+Math.round(v/1000)+'k)</text>'});
+  return svg+'</svg>';
+}
+function drawDon(w){document.getElementById('ch-don').innerHTML=svgDon(w)}
+
+function svgMnd(all,doelMnd){
+  var mnd={},mn=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+  all.forEach(function(w){var d=new Date(w.jaar,0,1+((w.week-1)*7)),k=w.jaar+'-'+d.getMonth();if(!mnd[k])mnd[k]={lbl:mn[d.getMonth()]+"'"+(String(w.jaar).slice(2)),v:0};mnd[k].v+=w.netto});
+  var keys=Object.keys(mnd).sort(),data=keys.map(function(k){return Math.round(mnd[k].v)}),lbls=keys.map(function(k){return mnd[k].lbl});
+  var W=400,H=220,pl=55,pr=10,pt=10,pb=40,cw=W-pl-pr,ch=H-pt-pb;
+  var mx=Math.max.apply(null,data.map(Math.abs).concat([doelMnd]))||1,mn2=Math.min.apply(null,data.concat([0]))||0;
+  var rMin=Math.min(mn2,0),rMax=mx*1.15,range=rMax-rMin||1,n=data.length||1,bw=Math.floor(cw/n),bp=Math.max(2,Math.floor(bw*0.2));
+  var zy=pt+ch*(1-(-rMin)/range);
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%">';
+  [0,.5,1].forEach(function(t){var y=pt+ch*(1-t),v=rMin+range*t;svg+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-pr)+'" y2="'+y+'" stroke="#f0f0e8" stroke-width="1"/><text x="'+(pl-5)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="#aaa">€'+Math.round(v/1000)+'k</text>'});
+  var dy=pt+ch*(1-(doelMnd-rMin)/range);if(dy>=pt&&dy<=pt+ch)svg+='<line x1="'+pl+'" y1="'+dy+'" x2="'+(W-pr)+'" y2="'+dy+'" stroke="#27ae60" stroke-width="1" stroke-dasharray="4,3"/><text x="'+(W-pr-2)+'" y="'+(dy-3)+'" text-anchor="end" font-size="9" fill="#27ae60">doel</text>';
+  svg+='<line x1="'+pl+'" y1="'+zy+'" x2="'+(W-pr)+'" y2="'+zy+'" stroke="#ddd" stroke-width="1.5"/>';
+  data.forEach(function(v,i){
+    var x=pl+i*bw+bp,bx=Math.max(bw-bp*2,2),col=v>=doelMnd?'#1D9E75':v>0?'#EF9F27':'#E24B4A',by,bh;
+    if(v>=0){by=pt+ch*(1-(v-rMin)/range);bh=zy-by}else{by=zy;bh=Math.abs(pt+ch*(1-(v-rMin)/range)-zy)}
+    if(bh<1)bh=1;svg+='<rect x="'+x+'" y="'+by+'" width="'+bx+'" height="'+bh+'" fill="'+col+'" rx="2"/>';
+    svg+='<text x="'+(x+bx/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="#aaa">'+lbls[i]+'</text>';
+  });
+  return svg+'</svg>';
+}
+function drawMnd(a,d){document.getElementById('ch-mnd').innerHTML=svgMnd(a,d)}
+
+function drawTbl(weken,doelW){
+  if(!weken.length){document.getElementById('d-tbl').innerHTML='<div class="empty">Geen data in deze periode</div>';return}
+  document.getElementById('d-tbl').innerHTML='<table class="tbl"><thead><tr><th>Week</th><th>Omzet</th><th>Inkoop</th><th>Kosten</th><th>Nettowinst</th><th>Marge</th><th>Km</th><th>Status</th></tr></thead><tbody>'
+    +weken.slice().reverse().map(function(w){return'<tr><td>'+w.lbl+'</td><td>'+fe(w.omz)+'</td><td>'+fe(w.ink)+'</td><td>'+fe(w.totK)+'</td>'
+      +'<td style="font-weight:700;color:'+(w.netto>=doelW?'#27ae60':w.netto>0?'#e67e22':'#e74c3c')+'">'+fe(w.netto)+'</td>'
+      +'<td>'+w.marge.toFixed(1)+'%</td><td>'+w.totKm+' km</td>'
+      +'<td><span class="dot '+(w.netto>=doelW?'dotg':w.netto>0?'doto':'dotr')+'"></span>'+(w.netto>=doelW?'Op koers':w.netto>0?'Onder doel':'Verlies')+'</td></tr>'
+    }).join('')+'</tbody></table>';
+}
+function renderSc(s){
+  var box=document.getElementById('d-sc'),txt=document.getElementById('d-sc-t');
+  if(!s.sc_datum){box.style.display='none';return}
+  var d=new Date(s.sc_datum),nu=new Date(),act=d<=nu;
+  var ds=d.toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  var hm=(parseFloat(s.huur_dag)||230)*(parseFloat(s.huur_dgn)||2)*4.33;
+  var sm=(parseFloat(s.sc_lease)||0)+(parseFloat(s.sc_ondh)||0),bs=hm-sm;
+  box.style.display='block';
+  if(act){txt.innerHTML='Scania actief vanaf '+ds+'. Maandlast: <strong>€'+Math.round(sm).toLocaleString('nl-NL')+'</strong>'}
+  else{var dag=Math.ceil((d-nu)/86400000);txt.innerHTML='Verwacht op <strong>'+ds+'</strong> — nog <strong>'+dag+' dagen</strong>.<br>Huurwagen nu: ca. <strong>€'+Math.round(hm).toLocaleString('nl-NL')+'/mnd</strong> &rarr; Scania: <strong>€'+Math.round(sm).toLocaleString('nl-NL')+'/mnd</strong><br>Besparing: <strong style="color:#085041">€'+Math.round(bs).toLocaleString('nl-NL')+'/mnd &middot; €'+Math.round(bs*12).toLocaleString('nl-NL')+'/jaar</strong>'}
+}
+
+loadS();renderK();
+var orsEl=document.getElementById('w_ors');if(orsEl)orsEl.value=localStorage.getItem('pl_ors')||'';
+</script>
+</body>
+</html>
